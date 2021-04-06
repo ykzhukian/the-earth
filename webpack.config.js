@@ -13,12 +13,28 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.jpe?g$|\.png$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 8192,
+              name: '[name].[ext]'
+            }
+          },
+        ]
+      },
     ],
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {
       '@': resolve('src'),
+    },
+    fallback: {
+      fs: false,
+      path: false
     },
   },
   optimization: {
