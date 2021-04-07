@@ -3,6 +3,13 @@ import earthImg from '../assets/world.jpg'
 
 const DAT = {}
 
+function onload2promise (obj) {
+  return new Promise((resolve, reject) => {
+    obj.onload = () => resolve(obj)
+    obj.onerror = reject
+  })
+}
+
 DAT.Globe = function (container, opts) {
   opts = opts || {}
 
@@ -74,13 +81,13 @@ DAT.Globe = function (container, opts) {
   // const padding = 40
   const PI_HALF = Math.PI / 2
 
-  function init () {
+  async function init () {
     container.style.color = '#fff'
     container.style.font = '13px/20px Arial, sans-serif'
 
     let shader, uniforms, material
-    w = container.offsetWidth || window.innerWidth
-    h = container.offsetHeight || window.innerHeight
+    w = container.offsetWidth || window.innerWidth / 2
+    h = container.offsetHeight || window.innerHeight / 2
 
     camera = new THREE.PerspectiveCamera(30, w / h, 1, 10000)
     camera.position.z = distance
@@ -92,14 +99,16 @@ DAT.Globe = function (container, opts) {
     shader = Shaders.earth
     uniforms = THREE.UniformsUtils.clone(shader.uniforms)
 
-    uniforms.texture.value = THREE.ImageUtils.loadTexture(earthImg)
+    // earth image
+    const earthBG = document.createElement('IMG')
+    earthBG.src = earthImg
+    const bg = await onload2promise(earthBG)
+    uniforms.texture.value = THREE.ImageUtils.getDataURL(bg)
 
     material = new THREE.ShaderMaterial({
-
       uniforms: uniforms,
       vertexShader: shader.vertexShader,
       fragmentShader: shader.fragmentShader
-
     })
 
     mesh = new THREE.Mesh(geometry, material)
@@ -110,14 +119,12 @@ DAT.Globe = function (container, opts) {
     uniforms = THREE.UniformsUtils.clone(shader.uniforms)
 
     material = new THREE.ShaderMaterial({
-
       uniforms: uniforms,
       vertexShader: shader.vertexShader,
       fragmentShader: shader.fragmentShader,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       transparent: true
-
     })
 
     mesh = new THREE.Mesh(geometry, material)
@@ -175,7 +182,7 @@ DAT.Globe = function (container, opts) {
         for (i = 0; i < data.length; i += step) {
           lat = data[i]
           lng = data[i + 1]
-          //        size = data[i + 2];
+          // size = data[i + 2]
           color = colorFnWrapper(data, i)
           size = 0
           addPoint(lat, lng, size, color, this._baseGeometry)

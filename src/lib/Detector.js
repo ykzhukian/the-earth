@@ -1,8 +1,3 @@
-/**
- * @author alteredq / http://alteredqualia.com/
- * @author mr.doob / http://mrdoob.com/
- */
-
 export const Detector = {
 
   canvas: !!window.CanvasRenderingContext2D,
@@ -25,14 +20,10 @@ export const Detector = {
     if (!this.webgl) {
       domElement.innerHTML = window.WebGLRenderingContext
         ? [
-            'Sorry, your graphics card doesn\'t support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a>'
+            '抱歉，你的环境不支持WebGL'
           ].join('\n')
         : [
-            'Sorry, your browser doesn\'t support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">WebGL</a><br/>',
-            'Please try with',
-            '<a href="http://www.google.com/chrome">Chrome</a>, ',
-            '<a href="http://www.mozilla.com/en-US/firefox/new/">Firefox 4</a> or',
-            '<a href="http://nightly.webkit.org/">Webkit Nightly (Mac)</a>'
+            '抱歉，你的浏览器不支持WebGL'
           ].join('\n')
     }
 

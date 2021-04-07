@@ -4,5 +4,8 @@ module.exports = {
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "no-new": "off",
+    "indent": "off",
+    '@typescript-eslint/indent': ['error', 2],
   }
 };
