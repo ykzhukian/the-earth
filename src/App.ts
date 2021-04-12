@@ -8,6 +8,7 @@ import {
   SpotLight,
   SpotLightHelper,
   MeshLambertMaterial,
+  MeshPhysicalMaterial,
   MeshBasicMaterial,
   AxesHelper,
   PerspectiveCamera,
@@ -40,7 +41,7 @@ export default class App {
     this.scene = new Scene()
     this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1500)
     // 相机位置，右手坐标系，x,y,z
-    this.camera.position.set(100, 100, 30)
+    this.camera.position.set(200, 200, 30)
     this.camera.lookAt(new Vector3(0, 0, 0))
     this.renderer = new WebGLRenderer({ antialias: true })
     this.renderer.setSize(window.innerWidth, window.innerHeight)
@@ -52,16 +53,24 @@ export default class App {
     new OrbitControls(this.camera, this.renderer.domElement)
 
     // 地球
-    const earthGeometry = new SphereGeometry(30, 100, 100)
+    const earthGeometry = new SphereGeometry(100, 500, 500)
     // 材质
     const textureLoader = new TextureLoader()
-    const meshBasic = new MeshLambertMaterial({ map: textureLoader.load(earthBg), side: DoubleSide })
+    const meshBasic = new MeshPhysicalMaterial({
+      // color: 0xffffbb,
+      map: textureLoader.load(earthBg),
+      emissiveMap: textureLoader.load(earthBg),
+      side: DoubleSide,
+      // wireframe: true,
+      emissive: 0xffffff,
+      clearcoat: 0.5
+    })
     const mesh = new Mesh(earthGeometry, meshBasic)
-    mesh.name = 'box'
+    mesh.name = 'earth'
     this.scene.add(mesh)
 
     // 宇宙
-    const skyGeometry = new BoxGeometry(300, 300, 300)
+    const skyGeometry = new BoxGeometry(800, 800, 800)
     const meshBasicSky = new MeshBasicMaterial({ map: textureLoader.load(universeBg), side: DoubleSide })
     const meshSky = new Mesh(skyGeometry, meshBasicSky)
     this.scene.add(meshSky)
@@ -69,21 +78,21 @@ export default class App {
     // 光源
     const spotLight = new SpotLight(0xffffff, 0.5)
     const spotLight2 = new SpotLight(0xffffff, 0.5)
-    spotLight.position.set(-100, 0, -30)
-    spotLight2.position.set(100, 0, 20)
+    spotLight.position.set(-50, 0, -30)
+    spotLight2.position.set(50, 0, 20)
     spotLight.target = mesh
     spotLight2.target = mesh
     // this.scene.add(spotLight)
     // this.scene.add(spotLight2)
 
-    const light = new HemisphereLight(0xffffbb, 0x080820, 1)
-    this.scene.add(light)
+    // const light = new HemisphereLight(0xffffbb, 0xffffbb, 1)
+    // this.scene.add(light)
 
     // 经纬度点
     this.mixer = new CityGeometry(121.48, 31.22, 30, this.scene).mixerEl()
 
     // 辅助线
-    const axesHelper = new AxesHelper(100)
+    const axesHelper = new AxesHelper(300)
     this.scene.add(axesHelper)
     const spotLightHelper = new SpotLightHelper(spotLight) // 光源辅助线
     const spotLightHelper2 = new SpotLightHelper(spotLight2) // 光源辅助线

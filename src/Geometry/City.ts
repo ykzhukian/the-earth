@@ -35,8 +35,8 @@ export default class City {
   constructor (lng: number, lat: number, raduis: number, scene: Scene) {
     // 经纬度转坐标
     // const { x, y, z } = getPosition(lng, lat, raduis)
-    const pos1 = new Vector3(31.123123, 1, -10.123123)
-    const pos2 = new Vector3(23.123123, 1, 22)
+    const pos1 = new Vector3(100.123123, 1, -10.123123)
+    const pos2 = new Vector3(88.123123, 1, 22)
     this.scene = scene
     this.group = new Group()
     this.groupBall = new Group()
@@ -80,8 +80,8 @@ export default class City {
 
   drawLine = (longitude: number, latitude: number, longitude2: number, latitude2: number) => {
     const geometry = new BufferGeometry() // 声明一个几何体对象Geometry
-    const v0 = new Vector3(31.123123, 1, -10.123123)
-    const v3 = new Vector3(23.123123, 1, 22)
+    const v0 = new Vector3(100.123123, 1, -10.123123)
+    const v3 = new Vector3(88.123123, 1, 22)
     const p0 = new Vector3(0, 0, 0) // 法线向量
     const rayLine = new Ray(p0, getVCenter(v0.clone(), v3.clone())) // 顶点坐标
     const vtop = rayLine.at(2, new Vector3()) // 位置
