@@ -4,13 +4,10 @@ import {
   Vector3,
   CircleGeometry,
   Ray,
-  LineGeometry,
   Line,
   BufferGeometry,
-  ArcCurve,
   QuadraticBezierCurve3,
   LineBasicMaterial,
-  CubicBezierCurve3,
   SphereGeometry,
   MeshLambertMaterial,
   MeshBasicMaterial,
@@ -22,6 +19,7 @@ import {
   Group,
   DoubleSide
 } from 'three'
+import { countries } from '@/assets/countries'
 
 export default class City {
   private cityPosition: Vector3
@@ -34,51 +32,18 @@ export default class City {
 
   constructor (lng: number, lat: number, raduis: number, scene: Scene) {
     // 经纬度转坐标
-    // const { x, y, z } = getPosition(lng, lat, raduis)
-    const pos1 = new Vector3(100.123123, 1, -10.123123)
-    const pos2 = new Vector3(88.123123, 1, 22)
     this.scene = scene
     this.group = new Group()
     this.groupBall = new Group()
 
     // 圆点
-    const geometry = new CircleGeometry(1, 32)
-    const material = new MeshBasicMaterial({ color: 0xffff00, side: DoubleSide })
-    this.cityMesh = new Mesh(geometry, material)
-    this.cityMesh.position.set(pos1.x, pos1.y, pos1.z)
-    this.city2Mesh = new Mesh(geometry, material)
-    this.city2Mesh.position.set(pos1.x, pos1.y, pos1.z)
-    this.city2Mesh.position.set(pos2.x, pos2.y, pos2.z)
-    this.scene.add(this.cityMesh)
-    this.scene.add(this.city2Mesh)
-
-    const spherical = new Spherical()
-    spherical.setFromCartesianCoords(pos1.x, pos1.y, pos1.z)
-    this.cityMesh.rotateX(spherical.phi - Math.PI / 2)
-    this.cityMesh.rotateY(spherical.theta)
-
-    const spherical2 = new Spherical()
-    spherical2.setFromCartesianCoords(pos2.x, pos2.y, pos2.z)
-    this.city2Mesh.rotateX(spherical2.phi - Math.PI / 2)
-    this.city2Mesh.rotateY(spherical2.theta)
-
-    // 圆弧
-    // const arc = new ArcCurve(0, 0, 2, 0, 2 * Math.PI, false)
-    // const points = arc.getPoints(40)
-    // const geometryLine = new BufferGeometry().setFromPoints(points)
-    // const LineMateri = new LineBasicMaterial({ color: 0x20b2aa })
-    // const line = new Line(geometryLine, LineMateri)
-    // line.position.set(x, y, z)
-    // line.rotateX(spherical.phi + Math.PI / 2)
-    // line.rotateY(spherical.theta)
-    // this.scene.add(line)
 
     // @ts-ignore
     this.drawLine()
     // this.drawSportPoint()
   }
 
-  drawLine = (longitude: number, latitude: number, longitude2: number, latitude2: number) => {
+  drawLine = () => {
     const geometry = new BufferGeometry() // 声明一个几何体对象Geometry
     const v0 = new Vector3(100.123123, 1, -10.123123)
     const v3 = new Vector3(88.123123, 1, 22)
@@ -137,6 +102,22 @@ function getPosition (longitude: number, latitude: number, radius = this.radius)
   const y = radius * Math.sin(lt)
   const z = temp * Math.cos(lg)
   return new Vector3(x, y, z)
+}
+
+function createPosition (lnglat: number[]) {
+  const spherical = new Spherical()
+  spherical.radius = 100
+  const lng = lnglat[0]
+  const lat = lnglat[1]
+  // const phi = (180 - lng) * (Math.PI / 180)
+  // const theta = (90 + lat) * (Math.PI / 180)
+  const theta = (lng + 90) * (Math.PI / 180)
+  const phi = (90 - lat) * (Math.PI / 180)
+  spherical.phi = phi
+  spherical.theta = theta
+  const position = new Vector3()
+  position.setFromSpherical(spherical)
+  return position
 }
 
 function getVCenter (v1: Vector3, v2: Vector3) {
