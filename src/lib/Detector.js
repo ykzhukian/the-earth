@@ -20,11 +20,11 @@ export const Detector = {
     if (!this.webgl) {
       domElement.innerHTML = window.WebGLRenderingContext
         ? [
-            '抱歉，你的环境不支持WebGL'
-          ].join('\n')
+          '抱歉，你的环境不支持WebGL'
+        ].join('\n')
         : [
-            '抱歉，你的浏览器不支持WebGL'
-          ].join('\n')
+          '抱歉，你的浏览器不支持WebGL'
+        ].join('\n')
     }
 
     return domElement

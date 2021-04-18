@@ -1,10 +1,11 @@
 import * as THREE from 'three'
+import THREEx from '@/lib/THREEx'
 
 import earthBg from '@/assets/earth.jpg'
 import dotImg from '@/assets/dot.png'
 
 const EARTH_COLOR = 0x0689c9
-const EARTH_PARTICLE_COLOR = 0x0260cc
+const EARTH_PARTICLE_COLOR = 0xa9effc
 const BLINT_SPEED = 0.01
 
 export default class Earth {
@@ -19,6 +20,10 @@ export default class Earth {
     // 材质
     const meshBasic = new THREE.MeshLambertMaterial({ color: EARTH_COLOR })
     this.earth = new THREE.Mesh(earthGeometry, meshBasic)
+
+    // glow
+    // const glowMesh = new THREEx.GeometricGlowMesh(earthGeometry)
+    // this.earth.add(glowMesh.object3d)
 
     this.earthParticles = new THREE.Object3D()
     // 地球表面的点点

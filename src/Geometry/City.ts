@@ -1,126 +1,68 @@
-import {
-  Mesh,
-  MathUtils,
-  Vector3,
-  CircleGeometry,
-  Ray,
-  Line,
-  BufferGeometry,
-  QuadraticBezierCurve3,
-  LineBasicMaterial,
-  SphereGeometry,
-  MeshLambertMaterial,
-  MeshBasicMaterial,
-  Scene,
-  KeyframeTrack,
-  AnimationClip,
-  AnimationMixer,
-  Spherical,
-  Group,
-  DoubleSide
-} from 'three'
-import { countries } from '@/assets/countries'
+import * as THREE from 'three'
+import * as TWEEN from '@tweenjs/tween.js'
+
+const CITY_COLOR = 0x44edfc
 
 export default class City {
-  private cityPosition: Vector3
-  private cityMesh: Mesh
-  private city2Mesh: Mesh
-  private scene: Scene
-  private mixer: AnimationMixer
-  private group: Group
-  private groupBall: Group
+  private city: THREE.Object3D
+  private position: THREE.Vector3
 
-  constructor (lng: number, lat: number, raduis: number, scene: Scene) {
-    // 经纬度转坐标
-    this.scene = scene
-    this.group = new Group()
-    this.groupBall = new Group()
-
-    // 圆点
-
-    // @ts-ignore
-    this.drawLine()
-    // this.drawSportPoint()
+  constructor ([lng, lat]: number[]) {
+    this.createHexagon(this.createPosition([lng, lat]))
   }
 
-  drawLine = () => {
-    const geometry = new BufferGeometry() // 声明一个几何体对象Geometry
-    const v0 = new Vector3(100.123123, 1, -10.123123)
-    const v3 = new Vector3(88.123123, 1, 22)
-    const p0 = new Vector3(0, 0, 0) // 法线向量
-    const rayLine = new Ray(p0, getVCenter(v0.clone(), v3.clone())) // 顶点坐标
-    const vtop = rayLine.at(2, new Vector3()) // 位置
+  private createHexagon (position: THREE.Vector3) {
+    this.position = position
+    const hexagonPlane = new THREE.CircleGeometry(0.7, 6)
+    const materialPlane = new THREE.MeshBasicMaterial({
+      color: CITY_COLOR,
+      side: THREE.DoubleSide,
+      opacity: 0.8,
+      transparent: true
+    })
+    const circlePlane = new THREE.Mesh(hexagonPlane, materialPlane)
+    circlePlane.position.copy(position)
+    circlePlane.lookAt(new THREE.Vector3(0, 0, 0))
 
-    const curve = new QuadraticBezierCurve3(v0, vtop, v3) // 三维二次贝赛尔曲线
-    const curvePoints = curve.getPoints(100)
-    geometry.setFromPoints(curvePoints)
-    const material = new LineBasicMaterial({ color: 0xff7e41 })
-    const line = new Line(geometry, material)
-    this.scene.add(line)
-    this.sport(curvePoints)
+    const hexagon = new THREE.Object3D()
+    hexagon.add(circlePlane)
+    const scale = { x: 1, y: 1, z: 1 }
+    // hexagon.scale.set(scale.x, scale.y, scale.z)
+    const tween = new TWEEN.Tween(scale).to({ x: 1.5, y: 1.5, z: 1.5 }, 2000)
+    const tweenBack = new TWEEN.Tween(scale).to({ x: 1, y: 1, z: 1 }, 2000)
+    tween.onUpdate(function () {
+      circlePlane.scale.set(scale.x, scale.y, scale.z)
+    })
+    tweenBack.onUpdate(function () {
+      circlePlane.scale.set(scale.x, scale.y, scale.z)
+    })
+    tween.chain(tweenBack)
+    tweenBack.chain(tween)
+    tween.start()
+    this.city = hexagon
   }
 
-  drawSportPoint (position: Vector3, name: string) {
-    const box = new SphereGeometry(0.5, 10, 10)
-    const material = new MeshLambertMaterial({ color: 0x00bfff }) // 材质对象
-    const mesh = new Mesh(box, material)
-    mesh.name = name
-    mesh.position.set(position.x, position.y, position.z)
-    return mesh
+  private createPosition (lnglat: number[]) {
+    const spherical = new THREE.Spherical()
+    spherical.radius = 100
+    const lng = lnglat[0]
+    const lat = lnglat[1]
+    // const phi = (180 - lng) * (Math.PI / 180)
+    // const theta = (90 + lat) * (Math.PI / 180)
+    const theta = (lng + 90) * (Math.PI / 180)
+    const phi = (90 - lat) * (Math.PI / 180)
+    spherical.phi = phi
+    spherical.theta = theta
+    const position = new THREE.Vector3()
+    position.setFromSpherical(spherical)
+    return position
   }
 
-  sport (curvePoints: Vector3[]) {
-    const Ball = this.drawSportPoint(curvePoints[0], 'ball')
-    this.scene.add(Ball)
-    const arr = Array.from(Array(101), (v, k) => k) // 生成一个时间序列
-    const times = new Float32Array(arr)
-    const posArr: any[] = []
-    curvePoints.forEach(elem => {
-      posArr.push(elem.x, elem.y, elem.z)
-    }) // 创建一个和时间序列相对应的位置坐标系列
-    const values = new Float32Array(posArr) // 创建一个帧动画的关键帧数据，曲线上的位置序列对应一个时间序列
-    const posTrack = new KeyframeTrack('Ball.position', times, values)
-    const duration = 101
-    const clip = new AnimationClip('default', duration, [posTrack])
-    this.mixer = new AnimationMixer(Ball)
-    const AnimationAction = this.mixer.clipAction(clip)
-    AnimationAction.timeScale = 2
-    AnimationAction.play()
+  getMesh () {
+    return this.city
   }
 
-  mixerEl () {
-    return this.mixer
+  getPosition () {
+    return this.position
   }
-}
-
-// 经纬度转坐标
-function getPosition (longitude: number, latitude: number, radius = this.radius) { // 经度，纬度转换为坐标
-  const lg = MathUtils.degToRad(longitude)
-  const lt = MathUtils.degToRad(latitude) // 获取x，y，z坐标
-  const temp = radius * Math.cos(lt)
-  const x = temp * Math.sin(lg)
-  const y = radius * Math.sin(lt)
-  const z = temp * Math.cos(lg)
-  return new Vector3(x, y, z)
-}
-
-function createPosition (lnglat: number[]) {
-  const spherical = new Spherical()
-  spherical.radius = 100
-  const lng = lnglat[0]
-  const lat = lnglat[1]
-  // const phi = (180 - lng) * (Math.PI / 180)
-  // const theta = (90 + lat) * (Math.PI / 180)
-  const theta = (lng + 90) * (Math.PI / 180)
-  const phi = (90 - lat) * (Math.PI / 180)
-  spherical.phi = phi
-  spherical.theta = theta
-  const position = new Vector3()
-  position.setFromSpherical(spherical)
-  return position
-}
-
-function getVCenter (v1: Vector3, v2: Vector3) {
-  const v = v1.add(v2)
-  return v.divideScalar(2)
 }

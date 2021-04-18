@@ -1,25 +1,11 @@
 import {
-  Mesh,
   Scene,
-  DoubleSide,
   WebGLRenderer,
-  TextureLoader,
   SpotLight,
-  SpotLightHelper,
-  MeshBasicMaterial,
-  AxesHelper,
   PerspectiveCamera,
-  CircleGeometry,
-  Spherical,
-  AdditiveBlending,
-  PlaneGeometry,
-  Matrix4,
   AnimationMixer,
-  Object3D,
-  RepeatWrapping,
   Vector3,
   Vector2,
-  Raycaster,
   Color
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -30,12 +16,16 @@ import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 
 import Stats from 'stats.js'
+import * as TWEEN from '@tweenjs/tween.js'
 
 import { countries } from '@/assets/countries'
 
-import CityGeometry from '@/Geometry/City'
+import City from '@/Geometry/City'
+import Link from '@/Geometry/Link'
 import Earth from '@/Geometry/Earth'
 import Universe from '@/Geometry/Universe'
+
+import flow from '@/assets/hero-glow.svg'
 
 export default class App {
   private scene: Scene
@@ -53,6 +43,7 @@ export default class App {
     this.stats = new Stats()
     this.stats.showPanel(0)
     document.body.appendChild(this.stats.dom)
+    document.getElementById('flow').style.backgroundImage = `url(${flow})`
 
     // 舞台、相机
     this.scene = new Scene()
@@ -68,7 +59,8 @@ export default class App {
 
     // 轨迹，鼠标控制
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
-    this.controls.minDistance = 280
+    this.controls.enableZoom = false
+    this.controls.minDistance = 320
     this.controls.maxDistance = 320
     this.controls.maxPolarAngle = 1.5
     this.controls.minPolarAngle = 1
@@ -117,12 +109,17 @@ export default class App {
     this.scene.add(this.spotLight)
 
     // 上海
-    this.createHexagon(createPosition(countries[0].position))
+    const shanghai = new City(countries[0].position)
     // 越南
-    this.createHexagon(createPosition(countries[5].position))
+    const yuenan = new City(countries[5].position)
+    this.scene.add(shanghai.getMesh())
+    this.scene.add(yuenan.getMesh())
+    // 连线
+    const link = new Link(shanghai, yuenan)
+    this.scene.add(link.getMesh())
 
     // 经纬度点
-    this.mixer = new CityGeometry(121.48, 31.22, 30, this.scene).mixerEl()
+    // this.mixer = new CityGeometry(121.48, 31.22, 30, this.scene).mixerEl()
 
     this.render()
   }
@@ -136,23 +133,9 @@ export default class App {
     this.composer.render()
     this.renderer.render(this.scene, this.camera)
 
+    TWEEN.update()
+
     this.stats.end()
-  }
-
-  private createHexagon (position: Vector3) {
-    const hexagonPlane = new CircleGeometry(0.7, 6)
-    const materialPlane = new MeshBasicMaterial({
-      color: 0x44edfc,
-      side: DoubleSide,
-      opacity: 0.5
-    })
-    const circlePlane = new Mesh(hexagonPlane, materialPlane)
-    circlePlane.position.copy(position)
-    circlePlane.lookAt(new Vector3(0, 0, 0))
-
-    const hexagon = new Object3D()
-    hexagon.add(circlePlane)
-    this.scene.add(hexagon)
   }
 
   private handleWindowResize () {
@@ -163,20 +146,4 @@ export default class App {
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
   }
-}
-
-function createPosition (lnglat: number[]) {
-  const spherical = new Spherical()
-  spherical.radius = 100
-  const lng = lnglat[0]
-  const lat = lnglat[1]
-  // const phi = (180 - lng) * (Math.PI / 180)
-  // const theta = (90 + lat) * (Math.PI / 180)
-  const theta = (lng + 90) * (Math.PI / 180)
-  const phi = (90 - lat) * (Math.PI / 180)
-  spherical.phi = phi
-  spherical.theta = theta
-  const position = new Vector3()
-  position.setFromSpherical(spherical)
-  return position
 }
