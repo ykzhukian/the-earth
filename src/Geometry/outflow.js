@@ -1,118 +1,94 @@
-var vertexShader = [
-  'varying vec3	vVertexWorldPosition;',
-  'varying vec3	vVertexNormal;',
-  'varying vec4	vFragColor;',
-  'void main(){',
-  '	vVertexNormal	= normalize(normalMatrix * normal);',//将法线转换到视图坐标系中
-  '	vVertexWorldPosition	= (modelMatrix * vec4(position, 1.0)).xyz;',//将顶点转换到世界坐标系中
-  '	// set gl_Position',
-  '	gl_Position	= projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-  '}'
+import * as THREE from 'three'
 
-].join('\n');
-//大气层效果
-THREE.AeroSphere = {
-  uniforms: {
-      coeficient: {
-          type: "f",
-          value: 1.0
-      },
-      power: {
-          type: "f",
-          value: 2
-      },
-      glowColor: {
-          type: "c",
-          value: new THREE.Color(0xffff00)
-      }
-  },
-  vertexShader: vertexShader,
-  fragmentShader: [
-      'uniform vec3	glowColor;',
-      'uniform float	coeficient;',
-      'uniform float	power;',
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import modelGlb from '@/assets/PrimaryIonDrive.glb'
 
-      'varying vec3	vVertexNormal;',
-      'varying vec3	vVertexWorldPosition;',
+let camera
+let composer, renderer, mixer, clock
 
-      'varying vec4	vFragColor;',
-
-      'void main(){',
-      '	vec3 worldCameraToVertex= vVertexWorldPosition - cameraPosition;',	//世界坐标系中从相机位置到顶点位置的距离
-      '	vec3 viewCameraToVertex	= (viewMatrix * vec4(worldCameraToVertex, 0.0)).xyz;',//视图坐标系中从相机位置到顶点位置的距离
-      '	viewCameraToVertex	= normalize(viewCameraToVertex);',//规一化
-      '	float intensity		= pow(coeficient + dot(vVertexNormal, viewCameraToVertex), power);',
-      '	gl_FragColor		= vec4(glowColor, intensity);',
-      '}'//vVertexNormal视图坐标系中点的法向量
-      //viewCameraToVertex视图坐标系中点到摄像机的距离向量
-      //dot点乘得到它们的夹角的cos值
-      //从中心向外面角度越来越小（从钝角到锐角）从cos函数也可以知道这个值由负变正，不透明度最终从低到高
-  ].join('\n')
-
-//辉光效果Grow
-THREE.GlowSphere = {
-  uniforms: {
-      coeficient: {
-          type: "f",
-          value: 0.0
-      },
-      power: {
-          type: "f",
-          value: 2
-      },
-      glowColor: {
-          type: "c",
-          value: new THREE.Color(0xff22ff)
-      }
-  },
-  vertexShader: vertexShader,
-  fragmentShader: [
-      'uniform vec3	glowColor;',
-      'uniform float	coeficient;',
-      'uniform float	power;',
-
-      'varying vec3	vVertexNormal;',
-      'varying vec3	vVertexWorldPosition;',
-
-      'varying vec4	vFragColor;',
-
-      'void main(){',
-      '	vec3 worldVertexToCamera= cameraPosition - vVertexWorldPosition;',	//世界坐标系中顶点位置到相机位置到的距离
-      '	vec3 viewCameraToVertex	= (viewMatrix * vec4(worldVertexToCamera, 0.0)).xyz;',//视图坐标系中从相机位置到顶点位置的距离
-      '	viewCameraToVertex	= normalize(viewCameraToVertex);',//规一化
-      '	float intensity		= coeficient + dot(vVertexNormal, viewCameraToVertex);',
-      '	if(intensity > 0.65){ intensity = 0.0;}',
-      '	gl_FragColor		= vec4(glowColor, intensity);',
-      '}'//vVertexNormal视图坐标系中点的法向量
-      //viewCameraToVertex视图坐标系中点到摄像机的距离向量
-      //dot点乘得到它们的夹角的cos值
-      //从中心向外面角度越来越大（从锐角到钝角）从cos函数也可以知道这个值由负变正，不透明度最终从高到低
-  ].join('\n')
+const params = {
+  exposure: 1,
+  bloomStrength: 1.5,
+  bloomThreshold: 0,
+  bloomRadius: 0
 }
 
-//球体 辉光 大气层
-  function shad() {        
-      var material1 = new THREE.ShaderMaterial({
-          uniforms: THREE.AeroSphere.uniforms,
-          vertexShader: THREE.AeroSphere.vertexShader,
-          fragmentShader: THREE.AeroSphere.fragmentShader,
-          blending: THREE.NormalBlending,
-          transparent: true,
-          depthWrite:false
-      });
-      var material2 = new THREE.ShaderMaterial({
-          uniforms: THREE.GlowSphere.uniforms,
-          vertexShader: THREE.GlowSphere.vertexShader,
-          fragmentShader: THREE.GlowSphere.fragmentShader,
-          blending: THREE.NormalBlending,
-          transparent: true
-      });
-      var sphere = new THREE.SphereBufferGeometry(16, 32, 32);
-      var mesh = new THREE.Mesh(sphere, material1);
-      scene.add(mesh);
+init()
 
-      var sphere2 = new THREE.SphereBufferGeometry(10, 32, 32);
-      var mesh2 = new THREE.Mesh(sphere2, material2);
-      //mesh2.position.x = 15;
-      scene.add(mesh2);
-  }
+function init () {
+  const container = document.body
+
+  clock = new THREE.Clock()
+
+  renderer = new THREE.WebGLRenderer({ antialias: true })
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  renderer.toneMapping = THREE.ReinhardToneMapping
+  container.appendChild(renderer.domElement)
+
+  const scene = new THREE.Scene()
+
+  camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 100)
+  camera.position.set(-5, 2.5, -3.5)
+  scene.add(camera)
+
+  const controls = new OrbitControls(camera, renderer.domElement)
+  controls.maxPolarAngle = Math.PI * 0.5
+  controls.minDistance = 1
+  controls.maxDistance = 10
+
+  scene.add(new THREE.AmbientLight(0x404040))
+
+  const pointLight = new THREE.PointLight(0xffffff, 1)
+  camera.add(pointLight)
+
+  const renderScene = new RenderPass(scene, camera)
+
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85)
+  bloomPass.threshold = params.bloomThreshold
+  bloomPass.strength = params.bloomStrength
+  bloomPass.radius = params.bloomRadius
+
+  composer = new EffectComposer(renderer)
+  composer.addPass(renderScene)
+  composer.addPass(bloomPass)
+
+  new GLTFLoader().load(modelGlb, function (gltf) {
+    const model = gltf.scene
+
+    scene.add(model)
+
+    mixer = new THREE.AnimationMixer(model)
+    const clip = gltf.animations[0]
+    mixer.clipAction(clip.optimize()).play()
+
+    animate()
+  })
+
+  window.addEventListener('resize', onWindowResize)
+}
+
+function onWindowResize () {
+  const width = window.innerWidth
+  const height = window.innerHeight
+
+  camera.aspect = width / height
+  camera.updateProjectionMatrix()
+
+  renderer.setSize(width, height)
+  composer.setSize(width, height)
+}
+
+function animate () {
+  requestAnimationFrame(animate)
+
+  const delta = clock.getDelta()
+
+  mixer.update(delta)
+
+  composer.render()
+}

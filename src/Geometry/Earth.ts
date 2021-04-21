@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import THREEx from '@/lib/THREEx'
 
 import earthBg from '@/assets/earth.jpg'
 import dotImg from '@/assets/dot.png'
@@ -10,6 +9,7 @@ const BLINT_SPEED = 0.01
 
 export default class Earth {
   private earth: THREE.Mesh
+  private earthGlow: THREE.Mesh
   private earthParticles: THREE.Object3D
   private earthImg: HTMLImageElement
   private earthImgData: ImageData
@@ -38,6 +38,12 @@ export default class Earth {
       this.earthImgData = earthCtx.getImageData(0, 0, this.earthImg.width, this.earthImg.height)
       this.createEarthParticles()
     }
+
+    // 地球光晕
+    const geometry = new THREE.CircleGeometry(radius + 3, radius)
+    const material = new THREE.MeshBasicMaterial({ color: 0xdeecff, side: THREE.DoubleSide })
+    const circle = new THREE.Mesh(geometry, material)
+    this.earthGlow = circle
   }
 
   private createEarthParticles () {
@@ -140,6 +146,10 @@ export default class Earth {
 
   getParticleMesh () {
     return this.earthParticles
+  }
+
+  getGlowMesh () {
+    return this.earthGlow
   }
 }
 

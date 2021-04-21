@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import * as TWEEN from '@tweenjs/tween.js'
 
-const CITY_COLOR = 0x44edfc
+const CITY_COLOR = 0xb3f6fc
 
 export default class City {
   private city: THREE.Object3D
@@ -13,7 +13,7 @@ export default class City {
 
   private createHexagon (position: THREE.Vector3) {
     this.position = position
-    const hexagonPlane = new THREE.CircleGeometry(0.7, 6)
+    const hexagonPlane = new THREE.CircleGeometry(0.6, 6)
     const materialPlane = new THREE.MeshBasicMaterial({
       color: CITY_COLOR,
       side: THREE.DoubleSide,
