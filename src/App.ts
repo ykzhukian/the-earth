@@ -4,6 +4,7 @@ import {
   SpotLight,
   PerspectiveCamera,
   AmbientLight,
+  Group,
   Clock,
   Vector3,
   Vector2
@@ -33,7 +34,7 @@ export default class App {
   private earthAnimation: Function
   private composer: EffectComposer
   private controls: OrbitControls
-  private clock: Clock
+  private group: Group
 
   constructor () {
     // 帧率显示
@@ -61,9 +62,6 @@ export default class App {
     const earth = theEarth.getMesh()
     const earthGlow = theEarth.getGlowMesh()
     const earthParticles = theEarth.getParticleMesh()
-    this.scene.add(earth)
-    this.scene.add(earthParticles)
-    this.scene.add(earthGlow)
     this.earthAnimation = theEarth.getAnimation()
 
     // Set up an effect composer
@@ -90,20 +88,12 @@ export default class App {
     // const light = new AmbientLight(0xffffff, 0.4) // soft white light
     // this.scene.add(light)
 
-    // layers
-    this.camera.layers.enable(1)
-    earthGlow.layers.set(1)
-    earthParticles.layers.set(0)
-
     // 上海
     const shanghai = new City(countries[0].position)
     // 越南
     const yuenan = new City(countries[5].position)
-    this.scene.add(shanghai.getMesh())
-    this.scene.add(yuenan.getMesh())
     // 连线
     const link = new Link(yuenan, shanghai)
-    this.scene.add(link.getMesh())
     // setTimeout(() => this.scene.remove(link.getMesh()), 5000)
 
     setTimeout(() => {
@@ -138,7 +128,26 @@ export default class App {
       earthGlow.lookAt(new Vector3(this.camera.position.x - 20, this.camera.position.y - 20, this.camera.position.z))
     })
 
-    this.clock = new Clock()
+    this.group = new Group()
+    this.group.add(earth)
+    this.group.add(earthParticles)
+    this.group.add(shanghai.getMesh())
+    this.group.add(yuenan.getMesh())
+    this.group.add(link.getMesh())
+
+    // layers
+    this.camera.layers.enable(1)
+    earthGlow.layers.set(1)
+    this.group.layers.set(0)
+
+    // this.scene.add(shanghai.getMesh())
+    // this.scene.add(yuenan.getMesh())
+    // this.scene.add(link.getMesh())
+    // this.scene.add(earth)
+    // this.scene.add(earthParticles)
+    this.scene.add(this.group)
+    this.scene.add(earthGlow)
+
     this.render()
   }
 
@@ -148,12 +157,7 @@ export default class App {
     window.requestAnimationFrame(() => this.render())
     this.earthAnimation()
     this.controls.update()
-
-    // const delta = this.clock.getDelta()
-    // this.control.update(delta)
-    // this.camera.rotateY(1)
-    // this.composer.render()
-    // this.renderer.render(this.scene, this.camera)
+    this.group.rotation.y += 0.001
 
     this.renderer.clear()
 
