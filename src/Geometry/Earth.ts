@@ -20,10 +20,6 @@ export default class Earth {
     const meshBasic = new THREE.MeshLambertMaterial({ color: EARTH_COLOR })
     this.earth = new THREE.Mesh(earthGeometry, meshBasic)
 
-    // glow
-    // const glowMesh = new THREEx.GeometricGlowMesh(earthGeometry)
-    // this.earth.add(glowMesh.object3d)
-
     this.earthParticles = new THREE.Object3D()
     // 地球表面的点点
     this.earthImg = document.createElement('img')
@@ -115,7 +111,6 @@ export default class Earth {
       const particle = new THREE.Points(bufferGeom, material)
       this.earthParticles.add(particle)
     }
-    console.log('this.earthParticles', this.earthParticles)
   }
 
   getMesh () {
