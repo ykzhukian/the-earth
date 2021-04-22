@@ -6,5 +6,5 @@ import App from './App'
 if (!Detector.webgl) {
   Detector.addGetWebGLMessage()
 } else {
-  new App()
+  new App(document.body, 1000)
 }

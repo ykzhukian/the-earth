@@ -9,7 +9,7 @@ import { MeshLine, MeshLineMaterial } from 'three.meshline'
 import * as TWEEN from '@tweenjs/tween.js'
 import City from './City'
 
-const LINK_COLOR = 0xb3f6fc
+const LINK_COLOR = 0xe8f2ff
 
 export default class Link {
   private city1: City
@@ -50,7 +50,7 @@ export default class Link {
     const curvePoints = curve.getPoints(100)
     const material = new MeshLineMaterial({
       color: LINK_COLOR,
-      opacity: 0.5,
+      opacity: 0.7,
       transparent: true
     })
     const lineLength = { value: 0 }

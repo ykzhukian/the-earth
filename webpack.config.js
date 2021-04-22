@@ -27,8 +27,7 @@ module.exports = {
       },
       {
         test: /\.(glb|gltf)$/,
-        use:
-        [
+        use: [
           {
             loader: 'file-loader',
             options:
@@ -36,6 +35,15 @@ module.exports = {
               outputPath: 'assets/models/'
             }
           }
+        ]
+      },
+      {
+        test: /\.less$/i,
+        use: [
+          // compiles Less to CSS
+          "style-loader",
+          "css-loader",
+          "less-loader",
         ]
       },
     ],

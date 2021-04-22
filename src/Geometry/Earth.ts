@@ -5,11 +5,10 @@ import dotImg from '@/assets/dot.png'
 
 const EARTH_COLOR = 0x0689c9
 const EARTH_PARTICLE_COLOR = 0xa9effc
-const BLINT_SPEED = 0.01
 
 export default class Earth {
   private earth: THREE.Mesh
-  private earthGlow: THREE.Mesh
+  private earthGlow: THREE.Group | THREE.Mesh
   private earthParticles: THREE.Object3D
   private earthImg: HTMLImageElement
   private earthImgData: ImageData
@@ -40,15 +39,21 @@ export default class Earth {
     }
 
     // 地球光晕
-    const geometry = new THREE.CircleGeometry(radius + 3, radius)
-    const material = new THREE.MeshBasicMaterial({ color: 0xdeecff, side: THREE.DoubleSide })
+    const geometry = new THREE.CircleGeometry(radius + 1.5, radius)
+    const material = new THREE.MeshBasicMaterial({ color: 0xd7fcf6, side: THREE.DoubleSide })
+    const material2 = new THREE.MeshBasicMaterial({ color: 0xd1bdff, side: THREE.DoubleSide })
     const circle = new THREE.Mesh(geometry, material)
-    this.earthGlow = circle
+    const circle2 = new THREE.Mesh(geometry, material2)
+    const glowGrop = new THREE.Group()
+    circle.layers.set(1)
+    circle2.layers.set(1)
+    glowGrop.add(circle)
+    glowGrop.add(circle2)
+    this.earthGlow = glowGrop
   }
 
   private createEarthParticles () {
     const positions: any = []
-    const materials = []
     const sizes: any = []
     for (let i = 0; i < 2; i++) {
       positions[i] = {
@@ -57,28 +62,16 @@ export default class Earth {
       sizes[i] = {
         sizes: []
       }
-      const mat = new THREE.PointsMaterial()
-      mat.size = 2.5
-      mat.color = new THREE.Color(EARTH_PARTICLE_COLOR)
-      mat.map = new THREE.TextureLoader().load(dotImg)
-      mat.depthWrite = false
-      mat.transparent = true
-      mat.opacity = 0.1
-      mat.side = THREE.FrontSide
-      mat.blending = THREE.AdditiveBlending
-      const n = i / 2
-      // @ts-ignore
-      mat.t_ = n * Math.PI * 2
-      // @ts-ignore
-      mat.speed_ = BLINT_SPEED
-      // @ts-ignore
-      mat.min_ = 0.2 * Math.random() + 0.5
-      // @ts-ignore
-      mat.delta_ = 0.1 * Math.random() + 0.1
-      // @ts-ignore
-      mat.opacity_coef_ = 0.9
-      materials.push(mat)
     }
+    const material = new THREE.PointsMaterial()
+    material.size = 2.5
+    material.color = new THREE.Color(EARTH_PARTICLE_COLOR)
+    material.map = new THREE.TextureLoader().load(dotImg)
+    material.depthWrite = false
+    material.transparent = true
+    material.opacity = 0.7
+    material.side = THREE.FrontSide
+    material.blending = THREE.AdditiveBlending
     const spherical = new THREE.Spherical()
     spherical.radius = 100
     const step = 250
@@ -119,25 +112,10 @@ export default class Earth {
       bufferGeom.setAttribute('position', new THREE.BufferAttribute(typedArr1, 3))
       bufferGeom.setAttribute('size', new THREE.BufferAttribute(typedArr2, 1))
       bufferGeom.computeBoundingSphere()
-      const particle = new THREE.Points(bufferGeom, materials[i])
+      const particle = new THREE.Points(bufferGeom, material)
       this.earthParticles.add(particle)
     }
     console.log('this.earthParticles', this.earthParticles)
-  }
-
-  getAnimation () {
-    return () => {
-      if (!this.earthParticles) return
-      // 球面粒子闪烁
-      const objects = this.earthParticles.children
-      objects.forEach(obj => {
-        // @ts-ignore
-        const material = obj.material
-        material.t_ += material.speed_
-        material.opacity = (Math.sin(material.t_) * material.delta_ + material.min_) * material.opacity_coef_
-        material.needsUpdate = true
-      })
-    }
   }
 
   getMesh () {
