@@ -38,6 +38,9 @@ export default class App {
   private controls: OrbitControls
   private earthGroup: Group // 和地球一起旋转的内容
 
+  private shanghai: City
+  private cities: { city: City, link: Link }[]
+
   constructor (parentDom: HTMLElement, size: number) {
     // 长宽
     this.containerWidth = size * 1.2
@@ -91,30 +94,17 @@ export default class App {
     bloomPass.renderToScreen = true
 
     // 光源
-    const spotLight = new SpotLight(0x404040, 2)
+    const spotLight = new SpotLight(0x404040, 2.5)
     spotLight.target = earth
     this.scene.add(spotLight)
 
-    const light = new AmbientLight(0xffffff, 0.1) // soft white light
+    const light = new AmbientLight(0xffffff, 0.25) // soft white light
     this.scene.add(light)
 
     // 上海
-    const shanghai = new City(countries[0].position)
-    // 越南
-    const yuenan = new City(countries[5].position)
-    // 连线
-    const link = new Link(yuenan, shanghai)
-    setTimeout(() => this.earthGroup.remove(link.getMesh()), 5000)
+    this.shanghai = new City(countries[0].position)
 
-    setTimeout(() => {
-      // 赞比亚
-      const zanbiya = new City(countries[4].position)
-      this.earthGroup.add(zanbiya.getMesh())
-      // 连线
-      const link2 = new Link(zanbiya, shanghai)
-      this.earthGroup.add(link2.getMesh())
-      setTimeout(() => this.earthGroup.remove(link2.getMesh()), 5000)
-    }, 2000)
+    // setTimeout(() => this.earthGroup.remove(link.getMesh()), 5000)
 
     // 轨迹，鼠标控制
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
@@ -137,9 +127,7 @@ export default class App {
     this.earthGroup = new Group()
     this.earthGroup.add(earth)
     this.earthGroup.add(earthParticles)
-    this.earthGroup.add(shanghai.getMesh())
-    this.earthGroup.add(yuenan.getMesh())
-    this.earthGroup.add(link.getMesh())
+    this.earthGroup.add(this.shanghai.getMesh())
 
     // layers
     this.camera.layers.enable(1)
@@ -149,6 +137,9 @@ export default class App {
     this.scene.add(this.earthGroup)
     this.scene.add(earthGlow)
 
+    this.cities = []
+    // window.setInterval(() => this.createActivity(), 4000)
+
     this.render()
   }
 
@@ -157,7 +148,7 @@ export default class App {
 
     window.requestAnimationFrame(() => this.render())
     this.controls.update()
-    this.earthGroup.rotation.y += 0.001
+    this.earthGroup.rotation.y += 0.0003
 
     this.renderer.clear()
 
@@ -172,6 +163,25 @@ export default class App {
     TWEEN.update()
 
     this.stats.end()
+  }
+
+  private createActivity () {
+    const length = countries.length
+    const index = Math.floor(Math.random() * length)
+
+    const fromCity = new City(countries[index].position)
+    const link = new Link(fromCity, this.shanghai)
+    this.earthGroup.add(fromCity.getMesh())
+    this.earthGroup.add(link.getMesh())
+
+    this.cities.push({ city: fromCity, link })
+    if (this.cities.length > 5) {
+      const drop = this.cities.shift()
+      this.earthGroup.remove(drop.city.getMesh())
+      this.earthGroup.remove(drop.link.getMesh())
+      drop.city.destroy()
+      drop.link.destroy()
+    }
   }
 
   private handleWindowResize () {

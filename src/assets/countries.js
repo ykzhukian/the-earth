@@ -581,9 +581,6 @@ export const countries = [{
   name: '阿拉伯利比亚民众国',
   position: [13.07, 32.49]
 }, {
-  name: '阿根廷',
-  position: [-60.00, -36.30]
-}, {
   name: '阿富汗',
   position: [69.11, 34.28]
 }, {

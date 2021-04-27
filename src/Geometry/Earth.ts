@@ -20,6 +20,8 @@ export default class Earth {
     const meshBasic = new THREE.MeshLambertMaterial({ color: EARTH_COLOR })
     this.earth = new THREE.Mesh(earthGeometry, meshBasic)
 
+    // glow
+
     this.earthParticles = new THREE.Object3D()
     // 地球表面的点点
     this.earthImg = document.createElement('img')
