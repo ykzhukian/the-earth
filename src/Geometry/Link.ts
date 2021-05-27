@@ -60,19 +60,8 @@ export default class Link {
   }
 
   drawRing () {
-    // const ringGeometry = new THREE.RingGeometry(0.8, 1.2, 10)
-    // const materialPlane = new THREE.MeshBasicMaterial({
-    //   color: LINK_COLOR,
-    //   side: THREE.DoubleSide,
-    //   opacity: 0.8,
-    //   transparent: true
-    // })
-    // const ring = new THREE.Mesh(ringGeometry, materialPlane)
-    // ring.position.copy(this.city2.getPosition())
-    // ring.lookAt(new THREE.Vector3(0, 0, 0))
-    // this.linkGroup.add(ring)
     // 扩
-    const outter = new THREE.RingGeometry(2.7, 3.2, 15)
+    const outter = new THREE.RingGeometry(1, 1.3, 15)
     const materialOutter = new THREE.MeshBasicMaterial({
       color: LINK_COLOR,
       side: THREE.DoubleSide,
@@ -83,12 +72,12 @@ export default class Link {
     ringOutter.position.copy(this.city2.getPosition())
     ringOutter.lookAt(new THREE.Vector3(0, 0, 0))
     const ringScale = { value: 1 }
-    const drawRingTween = new TWEEN.Tween(ringScale).to({ value: 1.5 }, 200)
+    const drawRingTween = new TWEEN.Tween(ringScale).to({ value: 1.1 }, 200)
     drawRingTween.onUpdate(function () {
-      materialOutter.opacity = 1 / ringScale.value
+      materialOutter.opacity = 0.5
       ringOutter.scale.set(ringScale.value, ringScale.value, ringScale.value)
     })
-    const drawRingTweenBack = new TWEEN.Tween(ringScale).to({ value: 1 }, 200)
+    const drawRingTweenBack = new TWEEN.Tween(ringScale).to({ value: 1 }, 1000)
     drawRingTweenBack.onUpdate(function () {
       materialOutter.opacity = ringScale.value - 1
     })
@@ -107,7 +96,7 @@ export default class Link {
 
 function getBezierPoint (v0: THREE.Vector3, v3: THREE.Vector3) {
   const angle = (v0.angleTo(v3) * 180) / Math.PI // 0 ~ Math.PI       // 计算向量夹角
-  console.log('angle', v0.angleTo(v3))
+  // console.log('angle', v0.angleTo(v3))
   const aLen = angle
   const p0 = new THREE.Vector3(0, 0, 0) // 法线向量
   const rayLine = new THREE.Ray(p0, getVCenter(v0.clone(), v3.clone())) // 顶点坐标

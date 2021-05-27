@@ -10,7 +10,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass'
+import { UnrealBloomPass } from './lib/bloomPass'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 
 import Stats from 'stats.js'
@@ -47,9 +47,9 @@ export default class App {
     this.containerHeight = size
 
     // 帧率显示
-    this.stats = new Stats()
-    this.stats.showPanel(0)
-    parentDom.appendChild(this.stats.dom)
+    // this.stats = new Stats()
+    // this.stats.showPanel(0)
+    // parentDom.appendChild(this.stats.dom)
 
     // wrapper
     const container = document.createElement('DIV')
@@ -68,7 +68,8 @@ export default class App {
     // 相机位置，右手坐标系，x,y,z
     this.camera.position.set(-150, 100, -200)
     this.camera.lookAt(new Vector3(0, 0, 0))
-    this.renderer = new WebGLRenderer({ antialias: false }) // 抗锯齿
+    this.renderer = new WebGLRenderer({ antialias: false, alpha: true }) // 抗锯齿
+    this.renderer.setClearColor(0xffffff, 0)
     this.renderer.autoClear = false
     this.renderer.setSize(this.containerWidth, this.containerHeight)
     this.renderer.toneMappingExposure = Math.pow(1, 4.0)
@@ -87,6 +88,8 @@ export default class App {
 
     const renderScene = new RenderPass(this.scene, this.camera)
     const bloomPass = new UnrealBloomPass(new Vector2(this.containerWidth, this.containerHeight), 1.5, -0.8, 0.5) // strength, radius, threshold
+    renderScene.clear = false
+    bloomPass.clear = false
     this.composer.addPass(renderScene)
     this.composer.addPass(bloomPass)
 
@@ -113,8 +116,6 @@ export default class App {
     this.controls.maxDistance = 320
     this.controls.maxPolarAngle = 1.5
     this.controls.minPolarAngle = 1
-    // this.controls.minAzimuthAngle = 3.5
-    // this.controls.maxAzimuthAngle = 4
     this.controls.enablePan = false
     this.controls.enableDamping = true
     this.controls.dampingFactor = 0.05
@@ -138,13 +139,13 @@ export default class App {
     this.scene.add(earthGlow)
 
     this.cities = []
-    // window.setInterval(() => this.createActivity(), 4000)
+    window.setInterval(() => this.createActivity(), 4000)
 
     this.render()
   }
 
   private render () {
-    this.stats.begin()
+    // this.stats.begin()
 
     window.requestAnimationFrame(() => this.render())
     this.controls.update()
@@ -162,7 +163,7 @@ export default class App {
 
     TWEEN.update()
 
-    this.stats.end()
+    // this.stats.end()
   }
 
   private createActivity () {
