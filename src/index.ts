@@ -8,3 +8,5 @@ if (!Detector.webgl) {
 } else {
   new App(document.body, 1000)
 }
+
+export const Earth = App
