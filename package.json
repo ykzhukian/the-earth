@@ -1,12 +1,12 @@
 {
   "name": "the-shield-earth",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "一个地球",
   "main": "./src/index.ts",
   "scripts": {
     "start": "webpack serve --config ./webpack.config.js",
     "release": "standard-version",
-    "publish": "git push --follow-tags origin master && npm publish",
+    "publish": "git push --follow-tags origin master && npm publish --access public --registry http://registry.npmjs.org",
     "build": "tsc"
   },
   "author": "Kian",
