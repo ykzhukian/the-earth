@@ -68,7 +68,7 @@ module.exports = {
   output: {
     publicPath: '/',
     path: resolve('./dist'),
-    filename: '[name].[contenthash:8].js',
+    filename: 'index.js',
     chunkFilename: '[name].[contenthash:8].chunk.js'
   },
   plugins: [

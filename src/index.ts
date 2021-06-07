@@ -3,10 +3,10 @@ import App from './App'
 
 // import './Geometry/earth-impact'
 
-if (!Detector.webgl) {
-  Detector.addGetWebGLMessage()
-} else {
-  new App(document.body, 1000)
-}
+// if (!Detector.webgl) {
+//   Detector.addGetWebGLMessage()
+// } else {
+//   new App(document.body, 1000)
+// }
 
-export const Earth = App
+export default App

@@ -1,19 +1,19 @@
 {
   "name": "the-shield-earth",
-  "version": "1.0.7",
+  "version": "1.0.10",
   "description": "一个地球",
   "main": "./src/index.ts",
   "scripts": {
     "start": "webpack serve --config ./webpack.config.js",
     "release": "standard-version",
-    "publish": "git push --follow-tags origin master && npm publish --access public --registry http://registry.npmjs.org",
-    "build": "tsc"
+    "build": "webpack"
   },
   "author": "kianzyk",
   "license": "ISC",
   "types": "index.d.ts",
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^9.0.0",
     "css-loader": "^5.2.4",
     "eslint": "^7.23.0",
     "eslint-config-standard": "^16.0.2",
